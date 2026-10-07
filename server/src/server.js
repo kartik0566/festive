@@ -26,7 +26,10 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:5173", "http://localhost:5180"].filter(Boolean);
+const renderOrigin = process.env.RENDER_EXTERNAL_HOSTNAME
+  ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`
+  : undefined;
+const allowedOrigins = [process.env.CLIENT_URL, renderOrigin, "http://localhost:5173", "http://localhost:5180"].filter(Boolean);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, "../../client/dist");
