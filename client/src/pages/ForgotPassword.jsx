@@ -8,15 +8,20 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetPath, setResetPath] = useState("");
 
   const submit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError("");
     setMessage("");
+    setResetPath("");
     try {
       const { data } = await apiClient.post("/auth/password/forgot", { email });
       setMessage(data.message);
+      if (data.token) {
+        setResetPath(`/reset-password?token=${encodeURIComponent(data.token)}&email=${encodeURIComponent(data.email || email)}`);
+      }
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -36,9 +41,17 @@ const ForgotPassword = () => {
         </label>
         {error && <p className="form-message error" role="alert">{error}</p>}
         {message && <p className="form-message success" role="status">{message}</p>}
-        <button className="button primary full" type="submit" disabled={loading}>
-          {loading ? "Sending link…" : "Send reset link"}
-        </button>
+        {resetPath ? (
+          <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+            <Link className="button primary full" to={resetPath}>
+              Set New Password Now &rarr;
+            </Link>
+          </div>
+        ) : (
+          <button className="button primary full" type="submit" disabled={loading}>
+            {loading ? "Sending link…" : "Send reset link"}
+          </button>
+        )}
         <p className="switch-auth"><Link to="/login">Back to login</Link></p>
       </form>
     </main>

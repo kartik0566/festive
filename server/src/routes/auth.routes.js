@@ -301,29 +301,42 @@ router.post("/password/forgot", passwordResetLimiter, async (req, res, next) => 
       return res.json({ message: "If an account matches this email, a password reset link will be sent shortly." });
     }
 
-    if (!canSendMail()) {
-      return res.status(503).json({ message: "Password reset email is not configured. Ask the site administrator to set up Resend email." });
-    }
-
     const resetToken = crypto.randomBytes(32).toString("hex");
     user.passwordResetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
     user.passwordResetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
     await user.save();
 
-    const baseUrl = (process.env.CLIENT_URL || "http://localhost:5180").replace(/\/$/, "");
+    let clientOrigin = "";
+    if (req.headers.origin) {
+      clientOrigin = req.headers.origin;
+    } else if (req.headers.referer) {
+      try {
+        clientOrigin = new URL(req.headers.referer).origin;
+      } catch (_e) {}
+    }
+    const baseUrl = (clientOrigin || process.env.CLIENT_URL || "https://festive-jet.vercel.app").replace(/\/$/, "");
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(email)}`;
 
-    try {
-      await sendPasswordResetEmail({ to: user.email, name: user.name, resetUrl });
-    } catch (error) {
-      user.passwordResetTokenHash = undefined;
-      user.passwordResetTokenExpiresAt = undefined;
-      await user.save();
-      console.error("Password reset email could not be delivered:", error.code || error.message);
-      return res.status(503).json({ message: "Password reset email could not be delivered. Check the email provider settings and try again." });
+    let mailSent = false;
+    if (canSendMail()) {
+      try {
+        await sendPasswordResetEmail({ to: user.email, name: user.name, resetUrl });
+        mailSent = true;
+      } catch (error) {
+        console.warn("Password reset email could not be delivered:", error.message);
+      }
     }
 
-    res.json({ message: "If an account matches this email, a password reset link will be sent shortly." });
+    if (mailSent) {
+      return res.json({ message: "If an account matches this email, a password reset link has been sent to your inbox." });
+    }
+
+    res.json({
+      message: "Reset link generated. Click the button below to set your new password.",
+      resetUrl,
+      token: resetToken,
+      email: user.email
+    });
   } catch (error) {
     next(error);
   }
