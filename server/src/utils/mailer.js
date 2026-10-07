@@ -8,18 +8,25 @@ export const canSendMail = () => {
   return Boolean(process.env.SMTP_HOST && process.env.MAIL_FROM && authIsComplete);
 };
 
-const getTransporter = () =>
-  nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+const getTransporter = () => {
+  const host = process.env.SMTP_HOST;
+  const password =
+    host?.toLowerCase() === "smtp.gmail.com"
+      ? process.env.SMTP_PASS?.replace(/\s/g, "")
+      : process.env.SMTP_PASS;
+
+  return nodemailer.createTransport({
+    host,
     port: Number(process.env.SMTP_PORT || 587),
     secure: Number(process.env.SMTP_PORT) === 465,
     auth: process.env.SMTP_USER
       ? {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
+          pass: password
         }
       : undefined
   });
+};
 
 export const sendMail = async ({ to, subject, text, html }) => {
   if (!to) {
