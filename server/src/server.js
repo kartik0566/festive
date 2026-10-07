@@ -30,6 +30,10 @@ const projectRoot = path.resolve(__dirname, "../..");
 dotenv.config({ path: path.join(projectRoot, ".env"), override: false });
 dotenv.config({ path: path.join(projectRoot, "server", ".env"), override: false });
 
+if (process.env.RENDER_EXTERNAL_HOSTNAME) {
+  process.env.NODE_ENV = "production";
+}
+
 const app = express();
 const port = process.env.PORT || 5000;
 const renderOrigin = process.env.RENDER_EXTERNAL_HOSTNAME

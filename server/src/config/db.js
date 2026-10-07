@@ -16,7 +16,7 @@ export const connectDB = async () => {
 
   mongoose.set("strictQuery", true);
   const dnsServers = (process.env.MONGO_DNS_SERVERS || "").split(",").map((server) => server.trim()).filter(Boolean);
-  if (dnsServers.length) {
+  if (process.env.NODE_ENV !== "production" && dnsServers.length) {
     dns.setServers(dnsServers);
   }
 
