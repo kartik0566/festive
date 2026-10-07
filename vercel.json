@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://festive-rbw5.onrender.com/api/:path*"
+      "destination": "https://festive-server.vercel.app/api/:path*"
     },
     {
       "source": "/(.*)",

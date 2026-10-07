@@ -25,10 +25,15 @@ import { getChatProviderStatus } from "./utils/chat.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, "../..");
 
-dotenv.config({ path: path.join(projectRoot, ".env"), override: false });
-dotenv.config({ path: path.join(projectRoot, "server", ".env"), override: false });
+// Load .env files for local development — on Vercel/Render env vars are injected directly
+try {
+  const projectRoot = path.resolve(__dirname, "../..");
+  dotenv.config({ path: path.join(projectRoot, ".env"), override: false });
+  dotenv.config({ path: path.join(projectRoot, "server", ".env"), override: false });
+} catch (_e) {
+  // No .env files in production — that's fine
+}
 
 if (process.env.RENDER_EXTERNAL_HOSTNAME) {
   process.env.NODE_ENV = "production";
