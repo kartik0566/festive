@@ -78,18 +78,15 @@ MAIL_TO=admin@yourdomain.com
 
 If SMTP is not configured in development, OTPs are returned in the API response so the flow can be tested locally. In production, OTPs are sent only by email.
 
-## AI Proposal Drafting
+## AI chat and proposal drafting
 
-Admins and staff can select an event in the proposal form and click **Generate Draft**. The backend uses Ollama locally and fills the editable proposal fields.
+The customer chat and staff proposal drafting can use a local Ollama server during development. For a Render deployment, Ollama must run on a reachable hosted service; `127.0.0.1` points back to the Festive server itself. Configure `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and, if required by the host, `OLLAMA_API_KEY` in Render.
 
-Install Ollama and pull a model, then add these values to `server/.env`:
+For the customer chat, an OpenAI-compatible Llama provider can also be configured with `AI_API_BASE_URL`, `AI_API_KEY`, and `AI_MODEL`, or OpenAI with `OPENAI_API_KEY` and `OPENAI_MODEL`. The chat returns a clearly marked event-planning quick reply if no AI endpoint is configured or the endpoint times out. Proposal drafting continues to use Ollama.
 
-```txt
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=llama3.2:latest
-```
+## Email delivery on Render
 
-If Ollama is unavailable, the app falls back to a local template so the proposal flow remains testable.
+Render Free web services block outbound SMTP on ports 25, 465, and 587. Use the Resend HTTPS email API by setting `RESEND_API_KEY` and `MAIL_FROM` in Render; the sender address must be verified with Resend. SMTP remains available for local development or Render service plans that permit SMTP.
 
 Frontend dev URL:
 

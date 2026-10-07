@@ -129,17 +129,21 @@ const localTemplateResult = (event, note) => ({
 
 const ollamaBaseUrl = () => (process.env.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL).replace(/\/+$/, "");
 
-const ollamaModel = () => process.env.OLLAMA_MODEL || process.env.AI_MODEL || process.env.LLAMA_MODEL || DEFAULT_OLLAMA_MODEL;
+const ollamaModel = () => process.env.OLLAMA_MODEL || process.env.LLAMA_MODEL || DEFAULT_OLLAMA_MODEL;
 
 export const createProposalDraft = async (event) => {
   const model = ollamaModel();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
     const response = await fetch(`${ollamaBaseUrl()}/api/chat`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        ...(process.env.OLLAMA_API_KEY ? { Authorization: `Bearer ${process.env.OLLAMA_API_KEY}` } : {})
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model,
         stream: false,
@@ -180,6 +184,8 @@ export const createProposalDraft = async (event) => {
     };
   } catch (error) {
     return localTemplateResult(event, `Ollama is not available yet: ${error.message}`);
+  } finally {
+    clearTimeout(timeout);
   }
 };
 

@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
 
 export const canSendMail = () => {
+  if (process.env.RESEND_API_KEY && process.env.MAIL_FROM) {
+    return true;
+  }
+
   const hasUser = Boolean(process.env.SMTP_USER);
   const hasPassword = Boolean(process.env.SMTP_PASS);
   const authIsComplete = hasUser === hasPassword;
@@ -19,6 +23,9 @@ const getTransporter = () => {
     host,
     port: Number(process.env.SMTP_PORT || 587),
     secure: Number(process.env.SMTP_PORT) === 465,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 12000,
     auth: process.env.SMTP_USER
       ? {
           user: process.env.SMTP_USER,
@@ -28,16 +35,56 @@ const getTransporter = () => {
   });
 };
 
+const sendWithResend = async ({ to, subject, text, html }) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: process.env.MAIL_FROM,
+        to: [to],
+        subject,
+        text,
+        ...(html ? { html } : {})
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      console.error("Resend email delivery failed:", response.status);
+      throw new Error("The email API rejected this message. Check the API key and verify the sender address.");
+    }
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("The email API did not respond in time. Please request a new OTP in a moment.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 export const sendMail = async ({ to, subject, text, html }) => {
   if (!to) {
     return;
   }
 
   if (!canSendMail()) {
-    throw new Error("Email is not configured. Add valid SMTP settings in Render and request a new OTP.");
+    throw new Error("Email is not configured. Add a Resend API key and verified sender, or SMTP settings, then request a new OTP.");
   }
 
   try {
+    if (process.env.RESEND_API_KEY) {
+      await sendWithResend({ to, subject, text, html });
+      return;
+    }
+
     await getTransporter().sendMail({
       from: process.env.MAIL_FROM || "Festive Events <hello@festive.local>",
       to,
@@ -47,6 +94,20 @@ export const sendMail = async ({ to, subject, text, html }) => {
     });
   } catch (error) {
     console.error("Email delivery failed:", error.code || error.responseCode || error.message);
+    if (process.env.RESEND_API_KEY) {
+      throw error;
+    }
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    if (
+      process.env.RENDER_EXTERNAL_HOSTNAME &&
+      !process.env.RESEND_API_KEY &&
+      [25, 465, 587].includes(smtpPort) &&
+      ["ETIMEDOUT", "ECONNECTION", "ESOCKET"].includes(error.code)
+    ) {
+      throw new Error(
+        "Email could not connect. Render Free blocks outbound SMTP on ports 25, 465, and 587. Configure the Resend email API with a verified sender, or use a paid Render service, then request a new OTP."
+      );
+    }
     throw new Error("Email delivery failed. Check the SMTP settings in Render and request a new OTP.");
   }
 };

@@ -41,7 +41,21 @@ services:
         sync: false
       - key: MAIL_TO
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: OLLAMA_BASE_URL
-        value: http://127.0.0.1:11434
+        sync: false
       - key: OLLAMA_MODEL
         value: llama3.2:latest
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: AI_API_BASE_URL
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini

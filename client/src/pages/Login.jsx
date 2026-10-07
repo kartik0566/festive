@@ -1,5 +1,5 @@
-import { LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
-import { useState } from "react";
+import { LoaderCircle, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -23,6 +23,23 @@ const Login = ({ mode }) => {
   const [devOtp, setDevOtp] = useState("");
   const [message, setMessage] = useState(location.state?.notice || "");
   const [loading, setLoading] = useState(false);
+  const [slowConnection, setSlowConnection] = useState(false);
+  const pendingTimer = useRef(null);
+
+  const startLoading = () => {
+    window.clearTimeout(pendingTimer.current);
+    setLoading(true);
+    setSlowConnection(false);
+    pendingTimer.current = window.setTimeout(() => setSlowConnection(true), 5000);
+  };
+
+  const stopLoading = () => {
+    window.clearTimeout(pendingTimer.current);
+    setLoading(false);
+    setSlowConnection(false);
+  };
+
+  useEffect(() => () => window.clearTimeout(pendingTimer.current), []);
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
@@ -37,7 +54,7 @@ const Login = ({ mode }) => {
 
   const submit = async (event) => {
     event.preventDefault();
-    setLoading(true);
+    startLoading();
     setMessage("");
 
     try {
@@ -91,12 +108,12 @@ const Login = ({ mode }) => {
     } catch (error) {
       setMessage(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      stopLoading();
     }
   };
 
   const resendOtp = async () => {
-    setLoading(true);
+    startLoading();
     setMessage("");
 
     try {
@@ -113,7 +130,7 @@ const Login = ({ mode }) => {
     } catch (error) {
       setMessage(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      stopLoading();
     }
   };
 
@@ -204,9 +221,19 @@ const Login = ({ mode }) => {
           )}
 
           {message && <p className="form-message error">{message}</p>}
-          <button className="button primary full" type="submit" disabled={loading}>
-            {loading
-              ? "Please wait..."
+          <button className="button primary full login-submit" type="submit" disabled={loading} aria-busy={loading}>
+            {loading ? (
+              <>
+                <LoaderCircle className="loading-icon" size={18} aria-hidden="true" />
+                {slowConnection
+                  ? "Still connecting…"
+                  : step === "credentials"
+                    ? isRegister
+                      ? "Creating your account…"
+                      : "Checking details & sending code…"
+                    : "Verifying your code…"}
+              </>
+            )
               : step === "emailOtp"
                 ? "Verify Email"
                 : step === "loginOtp"
@@ -215,6 +242,11 @@ const Login = ({ mode }) => {
                     ? "Create Account"
                     : "Send Login OTP"}
           </button>
+          {loading && slowConnection && (
+            <p className="auth-wait-note" role="status">
+              Render may be waking the server after inactivity. This first connection can take about a minute.
+            </p>
+          )}
 
           {step !== "credentials" && (
             <div className="otp-actions">

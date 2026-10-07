@@ -1,5 +1,5 @@
-import { MessageCircle, Send, Sparkles, X } from "lucide-react";
-import { useState } from "react";
+import { LoaderCircle, Send, Sparkles, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { apiClient } from "../api/client.js";
 
 const initialMessages = [
@@ -15,6 +15,13 @@ const ChatWidget = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState(initialMessages);
   const [loading, setLoading] = useState(false);
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && bodyRef.current) {
+      bodyRef.current.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [isOpen, loading, messages]);
 
   const sendMessage = async () => {
     const trimmed = input.trim();
@@ -40,7 +47,8 @@ const ChatWidget = () => {
       const assistantMessage = {
         id: `${Date.now()}-bot`,
         role: "assistant",
-        text: data.reply || "I’m here to help with your event planning questions."
+        text: data.reply || "I’m here to help with your event planning questions.",
+        source: data.source
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -86,13 +94,21 @@ const ChatWidget = () => {
             </button>
           </div>
 
-          <div className="chat-body">
+          <div className="chat-body" ref={bodyRef} aria-live="polite">
             {messages.map((message) => (
               <div key={message.id} className={`chat-bubble ${message.role}`}>
                 {message.text}
+                {message.source === "guided-fallback" && (
+                  <small className="chat-source-note">Quick guidance · AI not connected</small>
+                )}
               </div>
             ))}
-            {loading && <div className="chat-bubble assistant pending">Thinking...</div>}
+            {loading && (
+              <div className="chat-bubble assistant pending">
+                <LoaderCircle size={15} aria-hidden="true" />
+                Putting together a helpful answer…
+              </div>
+            )}
           </div>
 
           <div className="chat-input-row">
@@ -101,7 +117,9 @@ const ChatWidget = () => {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={onKeyDown}
+              maxLength={2000}
               placeholder="How can we help with your event?"
+              aria-label="Message the event assistant"
             />
             <button type="button" className="button primary compact" onClick={sendMessage} disabled={loading || !input.trim()}>
               <Send size={16} />
