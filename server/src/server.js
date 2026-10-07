@@ -5,6 +5,9 @@ import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { connectDB } from "./config/db.js";
 import { seedDefaults } from "./config/seed.js";
 import { errorHandler, notFound } from "./middleware/error.js";
@@ -23,7 +26,10 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:5173"].filter(Boolean);
+const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:5173", "http://localhost:5180"].filter(Boolean);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, "../../client/dist");
 
 app.use(helmet());
 app.use(compression());
@@ -76,6 +82,18 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/catalog", catalogRoutes);
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+
+  app.get(/^\/(?!api).*/, (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);

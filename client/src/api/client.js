@@ -1,7 +1,12 @@
 import axios from "axios";
 import { decodeUrl } from "../utils/urlCipher.js";
 
-export const API_BASE_URL = decodeUrl(import.meta.env.VITE_API_URL, "http://localhost:5000/api");
+export const API_BASE_URL = decodeUrl(
+  import.meta.env.VITE_API_URL,
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5000/api"
+    : "/api"
+);
 
 const api = axios.create({
   baseURL: API_BASE_URL
