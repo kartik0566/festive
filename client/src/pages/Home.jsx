@@ -9,6 +9,7 @@ import {
   Phone,
   Send,
   ShieldCheck,
+  Sparkles,
   Star,
   UsersRound,
   X
@@ -280,6 +281,39 @@ const Home = () => {
             </Link>
           </div>
         </div>
+        <aside className="hero-art" aria-label="A preview of a Festive event">
+          <div className="hero-art-stage">
+            <div className="hero-orbit" />
+            <div className="hero-art-backdrop" />
+            <article className="hero-photo-card">
+              <img
+                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85"
+                alt="Warmly lit wedding reception with flowers and candlelight"
+              />
+              <div className="hero-photo-caption">
+                <span>THE MOMENT</span>
+                <strong>Made to feel like you.</strong>
+              </div>
+            </article>
+            <div className="hero-float-card hero-float-top">
+              <span className="hero-float-icon"><Sparkles size={17} /></span>
+              <span className="hero-float-copy">
+                <small>FROM FIRST IDEA</small>
+                <strong>To unforgettable</strong>
+              </span>
+            </div>
+            <div className="hero-float-card hero-float-bottom">
+              <span className="hero-avatar-stack" aria-hidden="true">
+                <i>F</i><i>E</i><i>+</i>
+              </span>
+              <span className="hero-float-copy">
+                <strong>Your team, all in sync</strong>
+                <small>Design · details · delivery</small>
+              </span>
+            </div>
+            <span className="hero-art-stamp">FE <span>·</span> 2026</span>
+          </div>
+        </aside>
         <div className="hero-metrics">
           <span>
             <strong>1</strong>

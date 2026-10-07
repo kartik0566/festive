@@ -1,6 +1,12 @@
 import nodemailer from "nodemailer";
 
-export const canSendMail = () => process.env.SMTP_HOST && process.env.MAIL_FROM;
+export const canSendMail = () => {
+  const hasUser = Boolean(process.env.SMTP_USER);
+  const hasPassword = Boolean(process.env.SMTP_PASS);
+  const authIsComplete = hasUser === hasPassword;
+
+  return Boolean(process.env.SMTP_HOST && process.env.MAIL_FROM && authIsComplete);
+};
 
 const getTransporter = () =>
   nodemailer.createTransport({
@@ -16,8 +22,12 @@ const getTransporter = () =>
   });
 
 export const sendMail = async ({ to, subject, text, html }) => {
-  if (!canSendMail() || !to) {
+  if (!to) {
     return;
+  }
+
+  if (!canSendMail()) {
+    throw new Error("Email is not configured. Add valid SMTP settings in Render and request a new OTP.");
   }
 
   try {
@@ -29,7 +39,8 @@ export const sendMail = async ({ to, subject, text, html }) => {
       html
     });
   } catch (error) {
-    console.error(`Email failed for ${to}:`, error.message);
+    console.error("Email delivery failed:", error.code || error.responseCode || error.message);
+    throw new Error("Email delivery failed. Check the SMTP settings in Render and request a new OTP.");
   }
 };
 

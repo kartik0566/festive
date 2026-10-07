@@ -34,7 +34,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, "../../client/dist");
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", "data:", "https://images.unsplash.com"]
+      }
+    }
+  })
+);
 app.use(compression());
 app.use(
   cors({
