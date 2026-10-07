@@ -17,6 +17,7 @@ import paymentRoutes from "./routes/payments.routes.js";
 import vendorRoutes from "./routes/vendors.routes.js";
 import reviewRoutes from "./routes/reviews.routes.js";
 import catalogRoutes from "./routes/catalog.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 dotenv.config();
 
@@ -51,14 +52,22 @@ app.use(express.json({ limit: "2mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.get("/api/health", (_req, res) => {
+  const aiStatus = process.env.OLLAMA_MODEL || process.env.AI_MODEL || process.env.LLAMA_MODEL || process.env.OLLAMA_BASE_URL
+    ? "ollama"
+    : process.env.OPENAI_API_KEY
+      ? "openai"
+      : "local-template";
+
   res.json({
     status: "ok",
     database: global.__dbConnected ? "connected" : "not_connected",
-    payments: process.env.RAZORPAY_KEY_ID ? "razorpay" : "demo"
+    payments: process.env.RAZORPAY_KEY_ID ? "razorpay" : "demo",
+    ai: aiStatus
   });
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/proposals", proposalRoutes);

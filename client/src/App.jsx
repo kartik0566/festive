@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ChatWidget from "./components/ChatWidget.jsx";
+import ProtectedRoute, { PublicRoute } from "./components/ProtectedRoute.jsx";
 
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 const Home = lazy(() => import("./pages/Home.jsx"));
@@ -21,8 +22,22 @@ const App = () => {
       >
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login mode="login" />} />
-          <Route path="/register" element={<Login mode="register" />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login mode="login" />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Login mode="register" />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -35,6 +50,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      <ChatWidget />
     </>
   );
 };

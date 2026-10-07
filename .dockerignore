@@ -1,0 +1,9 @@
+.git
+.mongodb
+node_modules
+client/node_modules
+client/dist
+server/node_modules
+.env
+*.log
+.codex-dev.*.log

@@ -5,12 +5,15 @@
   "description": "Full MERN event management platform with client, admin, staff, vendor, proposal, invoice, payment, calendar, and review workflows.",
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev": "concurrently -k -n mongo,server,client -c yellow,cyan,green \"npm run dev:mongo\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:mongo": "node scripts/dev-mongo.js",
     "build": "npm run build --prefix client",
-    "start": "npm start --prefix server"
+    "start": "npm start --prefix server",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
   }
 }
-

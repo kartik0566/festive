@@ -9,6 +9,31 @@ import { sendLeadNotification } from "../utils/mailer.js";
 
 const router = express.Router();
 
+const validateFutureEventDate = (value) => {
+  if (!value) {
+    throw new Error("Event date is required.");
+  }
+
+  const selectedDate = new Date(value);
+  if (Number.isNaN(selectedDate.getTime())) {
+    throw new Error("Event date is invalid.");
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (selectedDate < today) {
+    throw new Error("Event date must be in the future.");
+  }
+};
+
+const validateLocation = (value) => {
+  const location = String(value || "").trim();
+  if (!location || location.length < 2) {
+    throw new Error("Please enter a valid event location.");
+  }
+};
+
 router.use(requireDatabase);
 
 const canSeeEvent = (user, event) => {
@@ -21,6 +46,9 @@ const canSeeEvent = (user, event) => {
 
 router.post("/public-inquiry", protect, async (req, res, next) => {
   try {
+    validateFutureEventDate(req.body.eventDate);
+    validateLocation(req.body.location);
+
     const payload = {
       ...req.body,
       client: req.user.role === "client" ? req.user._id : req.body.client,
@@ -39,6 +67,9 @@ router.post("/public-inquiry", protect, async (req, res, next) => {
 
 router.post("/", protect, async (req, res, next) => {
   try {
+    validateFutureEventDate(req.body.eventDate);
+    validateLocation(req.body.location);
+
     const payload = {
       ...req.body,
       client: req.user.role === "client" ? req.user._id : req.body.client,

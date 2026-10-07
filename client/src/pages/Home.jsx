@@ -18,6 +18,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiClient, formatCurrency, getErrorMessage } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const getMinimumFutureDate = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const offset = today.getTimezoneOffset();
+  const localMidnight = new Date(today.getTime() - offset * 60 * 1000);
+  return localMidnight.toISOString().slice(0, 10);
+};
+
 const initialInquiry = {
   name: "",
   phone: "",
@@ -122,12 +130,26 @@ const Home = () => {
 
   const submitInquiry = async (event) => {
     event.preventDefault();
+    const trimmedLocation = inquiry.location?.trim();
+    const trimmedEventDate = inquiry.eventDate?.trim();
+
+    if (!trimmedLocation || trimmedLocation.length < 2) {
+      setStatus({ type: "error", message: "Please enter a valid event location." });
+      return;
+    }
+
+    if (!trimmedEventDate) {
+      setStatus({ type: "error", message: "Please select a future event date." });
+      return;
+    }
+
     setLoading(true);
     setStatus({ type: "", message: "" });
 
     try {
       await apiClient.post("/events/public-inquiry", {
         ...inquiry,
+        location: trimmedLocation,
         guestCount: Number(inquiry.guestCount || 0)
       });
       setInquiry(initialInquiry);
@@ -455,7 +477,14 @@ const Home = () => {
                 </label>
                 <label>
                   Event date
-                  <input type="date" name="eventDate" value={inquiry.eventDate} onChange={onChange} required />
+                  <input
+                    type="date"
+                    name="eventDate"
+                    value={inquiry.eventDate}
+                    min={getMinimumFutureDate()}
+                    onChange={onChange}
+                    required
+                  />
                 </label>
                 <label>
                   Guest count

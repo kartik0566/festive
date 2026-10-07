@@ -12,6 +12,7 @@ import {
   Plus,
   RefreshCcw,
   Send,
+  Sparkles,
   Star,
   UsersRound
 } from "lucide-react";
@@ -24,6 +25,14 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 const eventStatuses = ["new", "reviewing", "proposal_sent", "confirmed", "in_progress", "completed", "cancelled"];
 const assignmentStatuses = ["assigned", "accepted", "in_progress", "completed", "cancelled"];
+
+const getMinimumFutureDate = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const offset = today.getTimezoneOffset();
+  const localMidnight = new Date(today.getTime() - offset * 60 * 1000);
+  return localMidnight.toISOString().slice(0, 10);
+};
 
 const emptyEventForm = {
   eventType: "Wedding",
@@ -106,6 +115,7 @@ const Dashboard = () => {
   const [assignmentForm, setAssignmentForm] = useState(emptyAssignmentForm);
   const [reviewForm, setReviewForm] = useState({ event: "", rating: 5, comment: "" });
   const [userForm, setUserForm] = useState(emptyUserForm);
+  const [aiDrafting, setAiDrafting] = useState(false);
 
   const isAdmin = user.role === "admin";
   const isStaff = user.role === "staff";
@@ -193,9 +203,17 @@ const Dashboard = () => {
 
   const createEvent = async (event) => {
     event.preventDefault();
+
+    const trimmedLocation = String(eventForm.location || "").trim();
+    if (!trimmedLocation || trimmedLocation.length < 2) {
+      flash("error", "Please enter a valid event location.");
+      return;
+    }
+
     try {
       await apiClient.post("/events", {
         ...eventForm,
+        location: trimmedLocation,
         guestCount: Number(eventForm.guestCount || 0)
       });
       setEventForm(emptyEventForm);
@@ -241,6 +259,47 @@ const Dashboard = () => {
       loadDashboard();
     } catch (error) {
       flash("error", getErrorMessage(error));
+    }
+  };
+
+  const draftProposal = async () => {
+    if (!proposalForm.event) {
+      flash("error", "Select an event before generating a draft.");
+      return;
+    }
+
+    setAiDrafting(true);
+
+    try {
+      const { data } = await apiClient.post("/ai/proposal-draft", {
+        eventId: proposalForm.event
+      });
+
+      setProposalForm((current) => ({
+        ...current,
+        title: data.draft.title || current.title,
+        summary: data.draft.summary || current.summary,
+        itemName: data.draft.itemName || current.itemName,
+        itemDescription: data.draft.itemDescription || current.itemDescription,
+        quantity: data.draft.quantity || current.quantity,
+        unitPrice: data.draft.unitPrice || current.unitPrice,
+        discount: data.draft.discount ?? current.discount,
+        taxRate: data.draft.taxRate || current.taxRate,
+        terms: data.draft.terms || current.terms
+      }));
+
+      flash(
+        "success",
+        data.source === "ollama"
+          ? "Llama proposal draft ready."
+          : data.source === "openai"
+            ? "AI proposal draft ready."
+            : "Proposal draft ready."
+      );
+    } catch (error) {
+      flash("error", getErrorMessage(error));
+    } finally {
+      setAiDrafting(false);
     }
   };
 
@@ -487,6 +546,8 @@ const Dashboard = () => {
               proposals={proposals}
               approveProposal={approveProposal}
               rejectProposal={rejectProposal}
+              draftProposal={draftProposal}
+              aiDrafting={aiDrafting}
             />
           )}
 
@@ -614,7 +675,14 @@ const EventsTab = ({ canManage, isClient, eventForm, setEventForm, createEvent, 
           </label>
           <label>
             Event date
-            <input type="date" name="eventDate" value={eventForm.eventDate} onChange={updateObject(setEventForm)} required />
+            <input
+              type="date"
+              name="eventDate"
+              value={eventForm.eventDate}
+              min={getMinimumFutureDate()}
+              onChange={updateObject(setEventForm)}
+              required
+            />
           </label>
           <label>
             Budget
@@ -708,7 +776,9 @@ const ProposalsTab = ({
   events,
   proposals,
   approveProposal,
-  rejectProposal
+  rejectProposal,
+  draftProposal,
+  aiDrafting
 }) => (
   <>
     {canManage && (
@@ -725,6 +795,18 @@ const ProposalsTab = ({
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            AI draft
+            <button
+              className="button ghost full"
+              type="button"
+              onClick={draftProposal}
+              disabled={!proposalForm.event || aiDrafting}
+            >
+              <Sparkles size={18} />
+              {aiDrafting ? "Drafting..." : "Generate Draft"}
+            </button>
           </label>
           <label>
             Title

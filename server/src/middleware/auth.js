@@ -24,6 +24,26 @@ export const protect = async (req, res, next) => {
   }
 };
 
+export const optionalProtect = async (req, _res, next) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "dev-secret-change-me");
+      const user = await User.findById(decoded.id).select("-passwordHash");
+
+      if (user?.status === "active") {
+        req.user = user;
+      }
+    }
+  } catch (_error) {
+    // Chat remains available to visitors when no valid session is present.
+  }
+
+  next();
+};
+
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
