@@ -30,8 +30,8 @@ const publicUser = (user) => ({
   companyName: user.companyName
 });
 
-const devOtpPayload = (otp) => {
-  if (process.env.NODE_ENV === "production" || canSendMail()) {
+const devOtpPayload = (otp, mailSent = false) => {
+  if (mailSent && process.env.NODE_ENV === "production") {
     return {};
   }
 
@@ -43,8 +43,14 @@ const issueEmailVerificationOtp = async (user) => {
   user.emailVerificationOtpHash = await hashOtp(otp);
   user.emailVerificationOtpExpiresAt = otpExpiry(10);
   await user.save();
-  await sendEmailVerificationOtp({ to: user.email, name: user.name, otp });
-  return otp;
+  let mailSent = false;
+  try {
+    await sendEmailVerificationOtp({ to: user.email, name: user.name, otp });
+    mailSent = true;
+  } catch (error) {
+    console.warn("Could not deliver email verification OTP via email:", error.message);
+  }
+  return { otp, mailSent };
 };
 
 const issueLoginOtp = async (user) => {
@@ -52,8 +58,14 @@ const issueLoginOtp = async (user) => {
   user.loginOtpHash = await hashOtp(otp);
   user.loginOtpExpiresAt = otpExpiry(10);
   await user.save();
-  await sendLoginOtp({ to: user.email, name: user.name, otp });
-  return otp;
+  let mailSent = false;
+  try {
+    await sendLoginOtp({ to: user.email, name: user.name, otp });
+    mailSent = true;
+  } catch (error) {
+    console.warn("Could not deliver login OTP via email:", error.message);
+  }
+  return { otp, mailSent };
 };
 
 router.use(requireDatabase);
@@ -90,14 +102,16 @@ router.post("/register", async (req, res, next) => {
       emailVerified: false
     });
 
-    const otp = await issueEmailVerificationOtp(user);
+    const { otp, mailSent } = await issueEmailVerificationOtp(user);
 
     res.status(201).json({
-      message: "Account created. Verify your email with the OTP sent to your inbox.",
+      message: mailSent
+        ? "Account created. Verify your email with the OTP sent to your inbox."
+        : "Account created. Enter the verification OTP below.",
       requiresEmailVerification: true,
       email: user.email,
       user: publicUser(user),
-      ...devOtpPayload(otp)
+      ...devOtpPayload(otp, mailSent)
     });
   } catch (error) {
     next(error);
@@ -117,12 +131,12 @@ router.post("/send-verification-otp", async (req, res, next) => {
       return res.json({ message: "Email is already verified.", emailVerified: true });
     }
 
-    const otp = await issueEmailVerificationOtp(user);
+    const { otp, mailSent } = await issueEmailVerificationOtp(user);
     res.json({
-      message: "Verification OTP sent.",
+      message: mailSent ? "Verification OTP sent." : "Verification OTP generated. Use the OTP shown below.",
       requiresEmailVerification: true,
       email: user.email,
-      ...devOtpPayload(otp)
+      ...devOtpPayload(otp, mailSent)
     });
   } catch (error) {
     next(error);
@@ -155,7 +169,11 @@ router.post("/verify-email", async (req, res, next) => {
     user.emailVerificationOtpHash = undefined;
     user.emailVerificationOtpExpiresAt = undefined;
     await user.save();
-    await sendWelcomeEmail(user);
+    try {
+      await sendWelcomeEmail(user);
+    } catch (err) {
+      console.warn("Could not deliver welcome email:", err.message);
+    }
 
     res.json({
       message: "Email verified. You can now login.",
@@ -185,22 +203,26 @@ router.post("/login", async (req, res, next) => {
     }
 
     if (!user.emailVerified) {
-      const otp = await issueEmailVerificationOtp(user);
+      const { otp, mailSent } = await issueEmailVerificationOtp(user);
       return res.status(202).json({
-        message: "Verify your email before login. A verification OTP has been sent.",
+        message: mailSent
+          ? "Verify your email before login. A verification OTP has been sent."
+          : "Verify your email before login. Use the verification OTP shown below.",
         requiresEmailVerification: true,
         email: user.email,
-        ...devOtpPayload(otp)
+        ...devOtpPayload(otp, mailSent)
       });
     }
 
-    const otp = await issueLoginOtp(user);
+    const { otp, mailSent } = await issueLoginOtp(user);
 
     res.status(202).json({
-      message: "Login OTP sent to your email.",
+      message: mailSent
+        ? "Login OTP sent to your email."
+        : "Login OTP generated. Use the OTP shown below to log in.",
       requiresOtp: true,
       email: user.email,
-      ...devOtpPayload(otp)
+      ...devOtpPayload(otp, mailSent)
     });
   } catch (error) {
     next(error);
@@ -420,7 +442,11 @@ router.post("/users", protect, authorize("admin"), async (req, res, next) => {
       });
     }
 
-    await sendWelcomeEmail(user);
+    try {
+      await sendWelcomeEmail(user);
+    } catch (err) {
+      console.warn("Could not deliver welcome email:", err.message);
+    }
 
     res.status(201).json(publicUser(user));
   } catch (error) {

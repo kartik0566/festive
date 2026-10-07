@@ -5,6 +5,11 @@ export const canSendMail = () => {
     return true;
   }
 
+  // Render Free blocks outbound SMTP on ports 25, 465, and 587
+  if (process.env.RENDER_EXTERNAL_HOSTNAME && !process.env.RESEND_API_KEY) {
+    return false;
+  }
+
   const hasUser = Boolean(process.env.SMTP_USER);
   const hasPassword = Boolean(process.env.SMTP_PASS);
   const authIsComplete = hasUser === hasPassword;

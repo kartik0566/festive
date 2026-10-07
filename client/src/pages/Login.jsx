@@ -91,6 +91,9 @@ const Login = ({ mode }) => {
       if (data?.requiresEmailVerification) {
         setPendingEmail(data.email || form.email);
         setDevOtp(data.devOtp || "");
+        if (data?.devOtp) {
+          setOtp(data.devOtp);
+        }
         setStep("emailOtp");
         setMessage(data.message || "Enter the email verification OTP sent to your inbox.");
         return;
@@ -99,6 +102,9 @@ const Login = ({ mode }) => {
       if (data?.requiresOtp) {
         setPendingEmail(data.email || form.email);
         setDevOtp(data.devOtp || "");
+        if (data?.devOtp) {
+          setOtp(data.devOtp);
+        }
         setStep("loginOtp");
         setMessage(data.message || "Enter the login OTP sent to your inbox.");
         return;
@@ -128,6 +134,9 @@ const Login = ({ mode }) => {
             });
 
       setDevOtp(data.devOtp || "");
+      if (data?.devOtp) {
+        setOtp(data.devOtp);
+      }
       setMessage(data.message || "OTP sent again.");
     } catch (error) {
       setMessage(getErrorMessage(error));
@@ -197,7 +206,11 @@ const Login = ({ mode }) => {
                   required
                 />
               </label>
-              {devOtp && <p className="form-message success">Development OTP: {devOtp}</p>}
+              {devOtp && (
+                <p className="form-message success">
+                  One-Time Passcode (OTP): <strong>{devOtp}</strong>
+                </p>
+              )}
             </>
           )}
 
