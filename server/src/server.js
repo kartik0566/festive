@@ -42,6 +42,13 @@ const renderOrigin = process.env.RENDER_EXTERNAL_HOSTNAME
 const allowedOrigins = [process.env.CLIENT_URL, renderOrigin, "http://localhost:5173", "http://localhost:5180"].filter(Boolean);
 const clientDistPath = path.resolve(__dirname, "../../client/dist");
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (/^https:\/\/[a-zA-Z0-9-_.]+\.vercel\.app$/.test(origin)) return true;
+  return false;
+};
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -55,7 +62,7 @@ app.use(compression());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
