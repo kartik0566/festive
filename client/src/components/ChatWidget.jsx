@@ -1,6 +1,7 @@
 import { LoaderCircle, Send, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { apiClient } from "../api/client.js";
+import { buildChatFallback } from "../utils/chatFallback.js";
 
 const initialMessages = [
   {
@@ -40,15 +41,17 @@ const ChatWidget = () => {
     setLoading(true);
 
     try {
-      const { data } = await apiClient.post("/ai/chat", {
-        message: trimmed
-      });
+      const { data } = await apiClient.post(
+        "/ai/chat",
+        { message: trimmed },
+        { timeout: 28000 }
+      );
 
       const assistantMessage = {
         id: `${Date.now()}-bot`,
         role: "assistant",
-        text: data.reply || "I’m here to help with your event planning questions.",
-        source: data.source
+        text: data.reply || buildChatFallback(trimmed),
+        source: data.source || "guided-fallback"
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -58,9 +61,8 @@ const ChatWidget = () => {
         {
           id: `${Date.now()}-error`,
           role: "assistant",
-          text:
-            error?.response?.data?.message ||
-            "I could not reach the assistant right now. Please try again in a moment."
+          text: `The live AI connection is unavailable right now. Here is quick guidance: ${buildChatFallback(trimmed)}`,
+          source: "guided-fallback"
         }
       ]);
     } finally {

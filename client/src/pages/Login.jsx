@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getFirebaseSignInToken } from "../firebaseAuth.js";
 
 const Login = ({ mode }) => {
   const isRegister = mode === "register";
-  const { isAuthenticated, login, register, verifyLoginOtp, verifyEmail, resendVerificationOtp } = useAuth();
+  const { isAuthenticated, login, loginWithFirebaseIdToken, register, verifyLoginOtp, verifyEmail, resendVerificationOtp } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const redirectTo = location.state?.from || "/dashboard";
@@ -23,6 +24,7 @@ const Login = ({ mode }) => {
   const [devOtp, setDevOtp] = useState("");
   const [message, setMessage] = useState(location.state?.notice || "");
   const [loading, setLoading] = useState(false);
+  const [socialProvider, setSocialProvider] = useState("");
   const [slowConnection, setSlowConnection] = useState(false);
   const pendingTimer = useRef(null);
 
@@ -134,6 +136,23 @@ const Login = ({ mode }) => {
     }
   };
 
+  const signInWithProvider = async (providerName) => {
+    startLoading();
+    setSocialProvider(providerName);
+    setMessage("");
+
+    try {
+      const idToken = await getFirebaseSignInToken(providerName);
+      await loginWithFirebaseIdToken(idToken);
+      navigate(redirectTo);
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setSocialProvider("");
+      stopLoading();
+    }
+  };
+
   const backToCredentials = () => {
     setStep("credentials");
     setOtp("");
@@ -210,6 +229,11 @@ const Login = ({ mode }) => {
                   <input type="email" name="email" value={form.email} onChange={update} required />
                 </span>
               </label>
+              {!isRegister && (
+                <div className="auth-form-links">
+                  <Link to="/forgot-password" state={{ email: form.email }}>Forgot password?</Link>
+                </div>
+              )}
               <label>
                 Password
                 <span className="input-icon">
@@ -242,6 +266,31 @@ const Login = ({ mode }) => {
                     ? "Create Account"
                     : "Send Login OTP"}
           </button>
+          {step === "credentials" && (
+            <>
+              <div className="social-divider"><span>or continue with</span></div>
+              <div className="social-login-buttons">
+                <button
+                  className="button social-button"
+                  type="button"
+                  onClick={() => signInWithProvider("google")}
+                  disabled={loading}
+                >
+                  <span className="social-mark google-mark" aria-hidden="true">G</span>
+                  {socialProvider === "google" ? "Connecting…" : "Google"}
+                </button>
+                <button
+                  className="button social-button"
+                  type="button"
+                  onClick={() => signInWithProvider("facebook")}
+                  disabled={loading}
+                >
+                  <span className="social-mark facebook-mark" aria-hidden="true">f</span>
+                  {socialProvider === "facebook" ? "Connecting…" : "Facebook"}
+                </button>
+              </div>
+            </>
+          )}
           {loading && slowConnection && (
             <p className="auth-wait-note" role="status">
               Render may be waking the server after inactivity. This first connection can take about a minute.

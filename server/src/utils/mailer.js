@@ -182,6 +182,24 @@ export const sendEmailVerificationOtp = async ({ to, name, otp }) => {
   });
 };
 
+export const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
+  await sendMail({
+    to,
+    subject: "Reset your Festive Events password",
+    text: [
+      `Hi ${name || "there"},`,
+      "",
+      "Use the link below to choose a new password. This link expires in one hour and can only be used once.",
+      resetUrl,
+      "",
+      "If you did not request this, you can ignore this email.",
+      "",
+      "Regards,",
+      "Festive Events"
+    ].join("\n")
+  });
+};
+
 export const sendLoginOtp = async ({ to, name, otp }) => {
   await sendMail({
     to,

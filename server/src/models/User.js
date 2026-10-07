@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true
+      default: null
     },
     role: {
       type: String,
@@ -36,6 +36,13 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
+    passwordResetTokenHash: String,
+    passwordResetTokenExpiresAt: Date,
     emailVerificationOtpHash: String,
     emailVerificationOtpExpiresAt: Date,
     loginOtpHash: String,

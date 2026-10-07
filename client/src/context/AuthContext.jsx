@@ -40,6 +40,15 @@ export const AuthProvider = ({ children }) => {
     [saveSession]
   );
 
+  const loginWithFirebaseIdToken = useCallback(
+    async (idToken) => {
+      const { data } = await apiClient.post("/auth/firebase-login", { idToken });
+      saveSession(data);
+      return data;
+    },
+    [saveSession]
+  );
+
   const verifyLoginOtp = useCallback(
     async (payload) => {
       const { data } = await apiClient.post("/auth/login/verify-otp", payload);
@@ -105,12 +114,13 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: Boolean(token && user),
       login,
       register,
+      loginWithFirebaseIdToken,
       verifyLoginOtp,
       verifyEmail,
       resendVerificationOtp,
       logout
     }),
-    [loading, login, logout, register, resendVerificationOtp, token, user, verifyEmail, verifyLoginOtp]
+    [loading, login, loginWithFirebaseIdToken, logout, register, resendVerificationOtp, token, user, verifyEmail, verifyLoginOtp]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

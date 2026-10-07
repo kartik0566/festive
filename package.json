@@ -2,6 +2,9 @@
   "name": "festive-events-platform",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0 <26.0.0"
+  },
   "description": "Full MERN event management platform with client, admin, staff, vendor, proposal, invoice, payment, calendar, and review workflows.",
   "scripts": {
     "install:all": "npm install --prefix server && npm install --prefix client",

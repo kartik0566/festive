@@ -1675,6 +1675,7 @@ body {
   }
 }
 
+
 @media (max-width: 460px) {
   .brand {
     min-width: auto;
@@ -3503,5 +3504,324 @@ textarea:focus {
   .review-card,
   .record-card {
     transition-duration: 1ms !important;
+  }
+}
+
+/* A shared evening sky keeps every route inside the same festive atmosphere. */
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  color: #f8f3e8;
+  background-color: #0b1024;
+  background-image:
+    radial-gradient(ellipse at 14% 8%, rgba(117, 80, 152, 0.26), transparent 32rem),
+    radial-gradient(ellipse at 87% 22%, rgba(198, 129, 87, 0.18), transparent 28rem),
+    radial-gradient(ellipse at 68% 82%, rgba(62, 124, 138, 0.16), transparent 34rem),
+    linear-gradient(180deg, #0a1022 0%, #11152d 50%, #101728 100%);
+  background-attachment: fixed;
+}
+
+body::before,
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+body::before {
+  opacity: 0.72;
+  background-image:
+    radial-gradient(1.5px 1.5px at 7% 19%, rgba(255, 250, 224, 0.9) 98%, transparent),
+    radial-gradient(1px 1px at 15% 71%, rgba(255, 247, 220, 0.72) 98%, transparent),
+    radial-gradient(2px 2px at 22% 37%, rgba(255, 226, 172, 0.84) 98%, transparent),
+    radial-gradient(1px 1px at 29% 83%, rgba(255, 250, 232, 0.8) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 36% 14%, rgba(255, 239, 207, 0.84) 98%, transparent),
+    radial-gradient(1px 1px at 44% 61%, rgba(255, 252, 236, 0.72) 98%, transparent),
+    radial-gradient(2px 2px at 51% 29%, rgba(255, 226, 172, 0.82) 98%, transparent),
+    radial-gradient(1px 1px at 57% 91%, rgba(255, 250, 232, 0.78) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 64% 48%, rgba(255, 244, 221, 0.88) 98%, transparent),
+    radial-gradient(1px 1px at 73% 12%, rgba(255, 252, 236, 0.74) 98%, transparent),
+    radial-gradient(2px 2px at 79% 73%, rgba(255, 226, 172, 0.82) 98%, transparent),
+    radial-gradient(1px 1px at 87% 39%, rgba(255, 250, 232, 0.78) 98%, transparent),
+    radial-gradient(1.5px 1.5px at 94% 85%, rgba(255, 244, 221, 0.88) 98%, transparent);
+  background-size: 100% 100%;
+  animation: starGlow 7s ease-in-out infinite alternate;
+}
+
+body::after {
+  opacity: 0.56;
+  background:
+    radial-gradient(circle at 4% 34%, rgba(255, 190, 111, 0.18), transparent 5rem),
+    radial-gradient(circle at 91% 56%, rgba(255, 125, 151, 0.16), transparent 7rem),
+    radial-gradient(circle at 78% 9%, rgba(255, 216, 143, 0.16), transparent 6rem),
+    radial-gradient(circle at 23% 94%, rgba(101, 211, 205, 0.13), transparent 7rem);
+  animation: partyLights 18s ease-in-out infinite alternate;
+}
+
+.site-header {
+  color: #f8f3e8;
+  background: rgba(15, 20, 40, 0.76);
+  border-color: rgba(255, 238, 204, 0.2);
+  box-shadow: 0 14px 40px rgba(3, 5, 16, 0.28), inset 0 1px rgba(255, 255, 255, 0.09);
+}
+
+.brand strong,
+.nav-links a,
+.site-header .user-chip {
+  color: #f8f3e8;
+}
+
+.brand small {
+  color: #e5c78e;
+}
+
+.nav-links {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.nav-links a:hover,
+.nav-links .active {
+  color: #15182c;
+  background: #f0d28d;
+}
+
+.site-header .button.ghost,
+.site-header .icon-button {
+  color: #fff9ec;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.site-header .mobile-only {
+  color: #fff9ec;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.info-strip,
+.muted-band,
+.split-section,
+.auth-page,
+.auth-page.auth-login,
+.auth-page.auth-register {
+  background: transparent;
+  border-color: rgba(255, 238, 204, 0.1);
+}
+
+.info-strip div {
+  color: #fbf5e8;
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 239, 210, 0.15);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.info-strip svg,
+.section-heading .eyebrow,
+.inquiry-copy > .eyebrow {
+  color: #f0cf8a;
+}
+
+.section-heading h2,
+.inquiry-copy h2 {
+  color: #fff7e8;
+  text-shadow: 0 3px 24px rgba(5, 8, 23, 0.36);
+}
+
+.section-heading > p,
+.inquiry-copy p {
+  color: rgba(248, 243, 232, 0.78);
+}
+
+.auth-page {
+  min-height: calc(100vh - 88px);
+}
+
+.auth-panel .form-panel,
+.password-panel {
+  color: #29342e;
+  background: rgba(255, 254, 250, 0.97);
+  border-color: rgba(255, 243, 220, 0.68);
+  box-shadow: 0 28px 80px rgba(3, 6, 20, 0.36), 0 0 42px rgba(236, 190, 113, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.auth-form-links {
+  display: flex;
+  justify-content: flex-end;
+  margin: -11px 0 -5px;
+  font-size: 13px;
+}
+
+.auth-form-links a,
+.password-panel .switch-auth a {
+  color: #785f9f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-form-links a:hover,
+.password-panel .switch-auth a:hover {
+  text-decoration: underline;
+}
+
+.social-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8b8d86;
+  font-size: 12px;
+  text-align: center;
+}
+
+.social-divider::before,
+.social-divider::after {
+  height: 1px;
+  flex: 1;
+  content: "";
+  background: #e9e3d8;
+}
+
+.social-login-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.social-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #354139;
+  background: #fffefa;
+  border-color: #e2d9cb;
+  box-shadow: 0 5px 14px rgba(49, 43, 29, 0.05);
+}
+
+.social-button:hover:not(:disabled) {
+  border-color: #c7b184;
+  box-shadow: 0 10px 22px rgba(49, 43, 29, 0.1);
+  transform: translateY(-1px);
+}
+
+.social-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.social-mark {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.google-mark {
+  color: #4285f4;
+  background: #f1f4f9;
+}
+
+.facebook-mark {
+  color: #fff;
+  background: #1877f2;
+  font-size: 17px;
+}
+
+.password-page {
+  display: grid;
+  min-height: calc(100vh - 88px);
+  align-items: center;
+  justify-items: center;
+  padding: clamp(24px, 6vw, 76px) 20px;
+  background: transparent;
+}
+
+.password-panel {
+  display: grid;
+  width: min(100%, 480px);
+  gap: 18px;
+  padding: clamp(26px, 5vw, 42px);
+  border-radius: 24px;
+  animation: riseIn 460ms ease both;
+}
+
+.password-panel .eyebrow {
+  color: #9d7643;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.password-panel h1 {
+  margin: -4px 0 0;
+  color: #304136;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 6vw, 40px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.password-panel > p:not(.form-message) {
+  margin: -8px 0 0;
+  color: #718076;
+  line-height: 1.6;
+}
+
+.password-panel label {
+  display: grid;
+  gap: 8px;
+  color: #3a493d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.password-panel .switch-auth {
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes starGlow {
+  from { opacity: 0.45; }
+  to { opacity: 0.92; }
+}
+
+@keyframes partyLights {
+  from { transform: translate3d(-1%, -1%, 0) scale(0.99); opacity: 0.38; }
+  to { transform: translate3d(1%, 1%, 0) scale(1.03); opacity: 0.72; }
+}
+
+@media (max-width: 760px) {
+  .site-header .nav-links {
+    background: rgba(15, 20, 40, 0.98);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .site-header .nav-links a {
+    color: #f8f3e8;
+  }
+
+  .site-header .nav-links a:hover,
+  .site-header .nav-links .active {
+    color: #171a2d;
+    background: #f0d28d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .password-panel {
+    animation: none !important;
   }
 }

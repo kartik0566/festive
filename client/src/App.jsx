@@ -7,6 +7,8 @@ import ProtectedRoute, { PublicRoute } from "./components/ProtectedRoute.jsx";
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 const App = () => {
@@ -38,6 +40,8 @@ const App = () => {
               </PublicRoute>
             }
           />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/dashboard"
             element={

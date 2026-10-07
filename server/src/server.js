@@ -23,7 +23,12 @@ import catalogRoutes from "./routes/catalog.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import { getChatProviderStatus } from "./utils/chat.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, "../..");
+
+dotenv.config({ path: path.join(projectRoot, ".env"), override: false });
+dotenv.config({ path: path.join(projectRoot, "server", ".env"), override: false });
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -31,8 +36,6 @@ const renderOrigin = process.env.RENDER_EXTERNAL_HOSTNAME
   ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`
   : undefined;
 const allowedOrigins = [process.env.CLIENT_URL, renderOrigin, "http://localhost:5173", "http://localhost:5180"].filter(Boolean);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const clientDistPath = path.resolve(__dirname, "../../client/dist");
 
 app.use(

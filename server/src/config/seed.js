@@ -57,18 +57,38 @@ const packages = [
 
 export const seedDefaults = async () => {
   const adminEmail = process.env.ADMIN_EMAIL || "admin@festive.local";
-  const adminExists = await User.exists({ email: adminEmail.toLowerCase() });
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
+  const normalizedAdminEmail = adminEmail.trim().toLowerCase();
+  let admin = await User.findOne({ email: normalizedAdminEmail });
 
-  if (!adminExists) {
-    const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || "Admin@12345", 12);
-    await User.create({
+  if (!admin) {
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
+    admin = await User.create({
       name: process.env.ADMIN_NAME || "Festive Admin",
-      email: adminEmail,
+      email: normalizedAdminEmail,
       passwordHash,
       role: "admin",
       emailVerified: true
     });
-    console.log(`Seeded admin user: ${adminEmail}`);
+    console.log(`Seeded admin user: ${normalizedAdminEmail}`);
+  } else {
+    let needsSave = false;
+    if (admin.role !== "admin") {
+      admin.role = "admin";
+      needsSave = true;
+    }
+    if (!admin.emailVerified) {
+      admin.emailVerified = true;
+      needsSave = true;
+    }
+    if (!(await bcrypt.compare(adminPassword, admin.passwordHash || ""))) {
+      admin.passwordHash = await bcrypt.hash(adminPassword, 12);
+      needsSave = true;
+    }
+    if (needsSave) {
+      await admin.save();
+      console.log(`Synchronized admin login from environment: ${normalizedAdminEmail}`);
+    }
   }
 
   if ((await Service.countDocuments()) === 0) {

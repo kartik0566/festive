@@ -8,6 +8,8 @@ Large-scale event management platform built with the MERN stack.
 - Role-based login for admin, client, staff, and vendor users
 - Email verification OTP after registration
 - Login OTP verification before issuing JWT sessions
+- Firebase Google and Facebook sign-in with server-verified Firebase ID tokens
+- One-time, expiring password reset links for email/password accounts
 - Nodemailer email notifications for inquiries, proposals, invoices, payment receipts, and account messages
 - Client event requests and dashboard tracking
 - Admin/staff event pipeline management
@@ -87,6 +89,21 @@ For the customer chat, an OpenAI-compatible Llama provider can also be configure
 ## Email delivery on Render
 
 Render Free web services block outbound SMTP on ports 25, 465, and 587. Use the Resend HTTPS email API by setting `RESEND_API_KEY` and `MAIL_FROM` in Render; the sender address must be verified with Resend. SMTP remains available for local development or Render service plans that permit SMTP.
+
+## Firebase social sign-in
+
+In Firebase Console, enable Google and Facebook under **Authentication → Sign-in method**. Create a Firebase web app and add the Render hostname (`festive-rbw5.onrender.com`) to **Authentication → Settings → Authorized domains**. For Facebook, add the OAuth redirect URL shown by Firebase to your Facebook app's OAuth configuration and enter its app credentials in Firebase.
+
+Set these Render environment variables before the next deploy:
+
+- `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, and `VITE_FIREBASE_APP_ID` from the Firebase web app config. These are baked into the frontend at build time, so changing them requires a new deploy.
+- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` from a Firebase service account. Keep the private key only in Render; preserve its escaped `\\n` line breaks.
+
+The Google and Facebook buttons use Firebase popup sign-in. The API verifies each ID token, accepts only those two providers, and creates a regular client account the first time someone signs in.
+
+## Password reset
+
+The **Forgot password?** link sends a one-hour, single-use reset link through the configured email provider. On Render Free, set a Resend API key and verified `MAIL_FROM`; SMTP delivery is blocked on Render Free. The reset page applies the new password to an existing email/password account. Google and Facebook users continue to manage their password with their identity provider.
 
 Frontend dev URL:
 
