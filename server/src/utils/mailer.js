@@ -5,11 +5,6 @@ export const canSendMail = () => {
     return true;
   }
 
-  // Render Free blocks outbound SMTP on ports 25, 465, and 587
-  if (process.env.RENDER_EXTERNAL_HOSTNAME && !process.env.RESEND_API_KEY) {
-    return false;
-  }
-
   const hasUser = Boolean(process.env.SMTP_USER);
   const hasPassword = Boolean(process.env.SMTP_PASS);
   const authIsComplete = hasUser === hasPassword;
@@ -99,21 +94,7 @@ export const sendMail = async ({ to, subject, text, html }) => {
     });
   } catch (error) {
     console.error("Email delivery failed:", error.code || error.responseCode || error.message);
-    if (process.env.RESEND_API_KEY) {
-      throw error;
-    }
-    const smtpPort = Number(process.env.SMTP_PORT || 587);
-    if (
-      process.env.RENDER_EXTERNAL_HOSTNAME &&
-      !process.env.RESEND_API_KEY &&
-      [25, 465, 587].includes(smtpPort) &&
-      ["ETIMEDOUT", "ECONNECTION", "ESOCKET"].includes(error.code)
-    ) {
-      throw new Error(
-        "Email could not connect. Render Free blocks outbound SMTP on ports 25, 465, and 587. Configure the Resend email API with a verified sender, or use a paid Render service, then request a new OTP."
-      );
-    }
-    throw new Error("Email delivery failed. Check the SMTP settings in Render and request a new OTP.");
+    throw new Error(`Email delivery failed: ${error.message}. Check your SMTP settings and try again.`);
   }
 };
 
